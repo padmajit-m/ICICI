@@ -72,6 +72,10 @@ def generate_random_data():
 
     return flat_data, lrr_data, lbd_data, adr_stage1_data, adr_stage2_data
 
+# Initialize session state
+if 'generated_files' not in st.session_state:
+    st.session_state['generated_files'] = {}
+
 # Main Streamlit app
 st.title("Loan File Generator")
 
@@ -85,16 +89,18 @@ if st.button("Generate Loan Files"):
     df_adr_stage1 = pd.DataFrame([adr_stage1_data])
     df_adr_stage2 = pd.DataFrame([adr_stage2_data])
 
-    # Convert DataFrames to CSV
-    flat_csv = df_flat.to_csv(index=False).encode('utf-8')
-    lrr_csv = df_lrr.to_csv(index=False).encode('utf-8')
-    lbd_csv = df_lbd.to_csv(index=False).encode('utf-8')
-    adr_stage1_csv = df_adr_stage1.to_csv(index=False).encode('utf-8')
-    adr_stage2_csv = df_adr_stage2.to_csv(index=False).encode('utf-8')
+    # Store the DataFrames in session state
+    st.session_state['generated_files'] = {
+        'flat_file.csv': df_flat.to_csv(index=False).encode('utf-8'),
+        'lrr_file.csv': df_lrr.to_csv(index=False).encode('utf-8'),
+        'lbd_file.csv': df_lbd.to_csv(index=False).encode('utf-8'),
+        'adr_stage1_file.csv': df_adr_stage1.to_csv(index=False).encode('utf-8'),
+        'adr_stage2_file.csv': df_adr_stage2.to_csv(index=False).encode('utf-8')
+    }
 
-    # Download buttons
-    st.download_button("Download Flat File", data=flat_csv, file_name='flat_file.csv', mime='text/csv')
-    st.download_button("Download LRR File", data=lrr_csv, file_name='lrr_file.csv', mime='text/csv')
-    st.download_button("Download LBD File", data=lbd_csv, file_name='lbd_file.csv', mime='text/csv')
-    st.download_button("Download ADR Stage 1 File", data=adr_stage1_csv, file_name='adr_stage1_file.csv', mime='text/csv')
-    st.download_button("Download ADR Stage 2 File", data=adr_stage2_csv, file_name='adr_stage2_file.csv', mime='text/csv')
+if st.session_state['generated_files']:
+    st.download_button("Download Flat File", data=st.session_state['generated_files']['flat_file.csv'], file_name='flat_file.csv', mime='text/csv')
+    st.download_button("Download LRR File", data=st.session_state['generated_files']['lrr_file.csv'], file_name='lrr_file.csv', mime='text/csv')
+    st.download_button("Download LBD File", data=st.session_state['generated_files']['lbd_file.csv'], file_name='lbd_file.csv', mime='text/csv')
+    st.download_button("Download ADR Stage 1 File", data=st.session_state['generated_files']['adr_stage1_file.csv'], file_name='adr_stage1_file.csv', mime='text/csv')
+    st.download_button("Download ADR Stage 2 File", data=st.session_state['generated_files']['adr_stage2_file.csv'], file_name='adr_stage2_file.csv', mime='text/csv')
