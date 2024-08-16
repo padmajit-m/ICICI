@@ -41,7 +41,11 @@ def generate_lrr(flat_data):
         'APPLICATION_FORM_NO': flat_data['Partner Application ID'],
         'MEMBER_CLIENT_ID': flat_data['Partner Customer ID']
     }
-    return pd.DataFrame([lrr_data])
+    
+    lrr_headers = ['NAME_OF_BC', 'APPLICATION_DATE', 'DAY_OF_MEETING', 'NAME_JLG_CENTRE', 'FIRST_NAME', 
+                   'SANCTIONED_DATE', 'SANCTIONED_AMT', 'URNID', 'APPLICATION_FORM_NO', 'MEMBER_CLIENT_ID']
+
+    return pd.DataFrame([lrr_data], columns=lrr_headers)
 
 # Generate the LBD file based on the LRR data
 def generate_lbd(flat_data, lrr_data):
@@ -59,7 +63,12 @@ def generate_lbd(flat_data, lrr_data):
         'ACCOUNT_OPENING_DATE': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'EXPIRY_DATE': '2047-06-05'
     }
-    return pd.DataFrame([lbd_data])
+    
+    lbd_headers = ['PINSTID', 'NAME_OF_BC', 'UNIQUE_REFERENCE_NUMBER', 'CLIENT_ID', 'APPLICATION_FORM_NO', 
+                   'CUSTOMER_NAME', 'CUSTOMER_ID', 'SANCTION_AMOUNT', 'SANCTION_DATE', 'ACCOUNT_NUMBER', 
+                   'ACCOUNT_OPENING_DATE', 'EXPIRY_DATE']
+
+    return pd.DataFrame([lbd_data], columns=lbd_headers)
 
 # Generate the ADR Stage 1 file based on the Flat file data
 def generate_adr_stage1(flat_data):
@@ -70,7 +79,11 @@ def generate_adr_stage1(flat_data):
         'Installment Start Date': (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'),
         'Interest Start Date': (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
     }
-    return pd.DataFrame([adr_stage1_data])
+    
+    adr_stage1_headers = ['Partner Loan ID', 'Partner Customer ID', 'Originator Decision', 
+                          'Installment Start Date', 'Interest Start Date']
+
+    return pd.DataFrame([adr_stage1_data], columns=adr_stage1_headers)
 
 # Generate the ADR Stage 2 file based on the Flat file data
 def generate_adr_stage2(flat_data):
@@ -81,7 +94,11 @@ def generate_adr_stage2(flat_data):
         'Originator Disbursement Amount': random.randint(30000, 70000),
         'Bc Reimbursement Ac No': flat_data['Bank Account Number']
     }
-    return pd.DataFrame([adr_stage2_data])
+    
+    adr_stage2_headers = ['Partner Loan ID', 'Partner Customer ID', 'Originator Disbursement Date', 
+                          'Originator Disbursement Amount', 'Bc Reimbursement Ac No']
+
+    return pd.DataFrame([adr_stage2_data], columns=adr_stage2_headers)
 
 # Convert dataframes to Excel format
 def to_excel(df_dict):
@@ -89,8 +106,6 @@ def to_excel(df_dict):
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         for sheet_name, df in df_dict.items():
             df.to_excel(writer, index=False, sheet_name=sheet_name)
-        writer.close()
-
     return output.getvalue()
 
 # Streamlit app
