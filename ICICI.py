@@ -109,11 +109,12 @@ if st.button('Generate Files'):
         'ADR_Stage2_File.xlsx': adr_stage2_file,
     }
     
+    # Generate download buttons without page refresh
     for file_name, df in files.items():
         output = io.BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
         df.to_excel(writer, index=False)
-        writer.save()
+        writer.close()  # Use close() instead of save()
         st.download_button(
             label=f"Download {file_name}",
             data=output.getvalue(),
