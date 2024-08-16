@@ -92,6 +92,10 @@ def generate_adr_stage2_file(flat_file):
 # Streamlit app logic
 st.title('Loan File Generator')
 
+# Generate the files once and store them
+if 'files_generated' not in st.session_state:
+    st.session_state.files_generated = False
+
 if st.button('Generate Files'):
     # Generate all files
     flat_file = generate_flat_file()
@@ -108,16 +112,23 @@ if st.button('Generate Files'):
         'ADR_Stage1_File.xlsx': adr_stage1_file,
         'ADR_Stage2_File.xlsx': adr_stage2_file,
     }
-    
-    # Generate download buttons without page refresh
+
+    st.session_state.files = {}
     for file_name, df in files.items():
         output = io.BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
         df.to_excel(writer, index=False)
         writer.close()  # Use close() instead of save()
+        st.session_state.files[file_name] = output.getvalue()
+
+    st.session_state.files_generated = True
+
+# Display download buttons if files are generated
+if st.session_state.files_generated:
+    for file_name, data in st.session_state.files.items():
         st.download_button(
             label=f"Download {file_name}",
-            data=output.getvalue(),
+            data=data,
             file_name=file_name,
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
