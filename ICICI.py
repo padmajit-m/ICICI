@@ -5,6 +5,17 @@ from docx import Document
 from io import BytesIO
 import os
 
+import pytesseract
+
+# Set Tesseract path
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
+# Set TESSDATA_PREFIX to ensure Telugu language is found
+os.environ["TESSDATA_PREFIX"] = "/usr/share/tesseract-ocr/4.00/tessdata/"
+
+# Check available languages
+print("Available Tesseract languages:", pytesseract.get_languages(config=''))
+
 # Set up Tesseract path (Modify if needed)
 pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"  # Linux/Mac
 # Uncomment for Windows: 
