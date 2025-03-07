@@ -4,6 +4,12 @@ import pytesseract
 from docx import Document
 from io import BytesIO
 
+import pytesseract
+
+# Set the correct path for Tesseract in Streamlit Cloud
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
+
 # Set Telugu language for OCR
 pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"  # Adjust path if needed
 
