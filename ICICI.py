@@ -1,57 +1,66 @@
+# save this as app.py
+
 import streamlit as st
-from pdf2image import convert_from_bytes
-import pytesseract
-from docx import Document
-from io import BytesIO
 import os
+import zipfile
+from PIL import Image, ImageDraw
+import shutil
 
-import pytesseract
+# Predefined document list
+DOCUMENTS = [
+    "POA_Voterid", "POA_Voterid_front", "POA_Voterid_back",
+    "POA_Aadhaar", "POA_Aadhaar_front", "POA_Aadhaar_back",
+    "POI_Voterid", "POI_Voterid_front", "POI_Voterid_back",
+    "POI_Aadhaar", "POI_Aadhaar_front", "POI_Aadhaar_back",
+    "Coapplicant1_POA_Voterid", "Coapplicant1_POA_Voterid_front", "Coapplicant1_POA_Voterid_back",
+    "Coapplicant1_POA_Aadhaar", "Coapplicant1_POA_Aadhaar_front", "Coapplicant1_POA_Aadhaar_back",
+    "Coapplicant1_POI_Voterid", "Coapplicant1_POI_Voterid_front", "Coapplicant1_POI_Voterid_back",
+    "Coapplicant1_POI_Aadhaar", "Coapplicant1_POI_Aadhaar_front", "Coapplicant1_POI_Aadhaar_back",
+    "Consent_Applicant", "Coapplicant1_Consent",
+    "LoanDocuments", "CKYC", "BankPassbook", "BankStatement",
+    "Photo", "Coapplicant1_Photo", "OwnershipProof",
+    "BusinessPhoto", "ResidencePhoto",
+    "SPDC", "DOGH", "UdyamAadhar", "ITR",
+    "UDC", "OtherDocuments1", "OtherDocuments2", "OtherDocuments3"
+]
 
-# Set Tesseract path
-pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+def create_dummy_image(text, filename):
+    img = Image.new('RGB', (400, 200), color=(255, 255, 255))
+    d = ImageDraw.Draw(img)
+    d.text((10, 90), text, fill=(0, 0, 0))
+    img.save(filename)
 
-# Set TESSDATA_PREFIX to ensure Telugu language is found
-os.environ["TESSDATA_PREFIX"] = "/usr/share/tesseract-ocr/4.00/tessdata/"
+def generate_documents(partner_customer_id, partner_loan_id, output_folder="generated_docs"):
+    if os.path.exists(output_folder):
+        shutil.rmtree(output_folder)  # Clean old data
+    os.makedirs(output_folder)
 
-# Check available languages
-print("Available Tesseract languages:", pytesseract.get_languages(config=''))
+    for doc in DOCUMENTS:
+        filename = f"{partner_customer_id}_{partner_loan_id}_{doc}.jpg"
+        filepath = os.path.join(output_folder, filename)
+        create_dummy_image(doc, filepath)
 
-# Set up Tesseract path (Modify if needed)
-pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"  # Linux/Mac
-# Uncomment for Windows: 
-# pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+def zip_documents(output_folder="generated_docs", zip_name="documents.zip"):
+    with zipfile.ZipFile(zip_name, 'w') as zipf:
+        for root, _, files in os.walk(output_folder):
+            for file in files:
+                zipf.write(os.path.join(root, file), arcname=file)
 
-st.title("📜 Telugu PDF to Word Converter")
-st.write("Upload a Telugu PDF, and it will be converted to a Word document with extracted text.")
+st.title("📄 Dummy Loan Document Generator")
 
-# File uploader
-uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
+# UI inputs
+partner_customer_id = st.text_input("Enter Partner Customer ID")
+partner_loan_id = st.text_input("Enter Partner Loan ID")
 
-if uploaded_file is not None:
-    st.write("⏳ Processing the file...")
+if st.button("Generate & Download Documents"):
+    if partner_customer_id and partner_loan_id:
+        generate_documents(partner_customer_id, partner_loan_id)
+        zip_documents()
 
-    # Convert PDF to images (high DPI for better OCR)
-    images = convert_from_bytes(uploaded_file.read(), dpi=300)
+        with open("documents.zip", "rb") as f:
+            st.download_button("📥 Download ZIP", f, file_name="documents.zip")
 
-    # Initialize a Word document
-    document = Document()
+        st.success("✅ Documents generated successfully!")
+    else:
+        st.warning("⚠️ Please enter both Partner Customer ID and Partner Loan ID.")
 
-    # Extract text using OCR for Telugu language
-    for img in images:
-        text = pytesseract.image_to_string(img, lang="tel", timeout=60)  # Telugu OCR with timeout
-        document.add_paragraph(text)
-
-    # Save the extracted text to a Word document
-    output = BytesIO()
-    document.save(output)
-    output.seek(0)
-
-    # Provide a download button for the user
-    st.download_button(
-        label="📥 Download Word File",
-        data=output,
-        file_name="converted_telugu.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
-
-    st.success("✅ Conversion complete! Click the button above to download your Word file.")
