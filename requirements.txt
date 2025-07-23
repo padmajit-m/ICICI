@@ -3,3 +3,6 @@ pdf2image
 pytesseract
 python-docx
 Pillow
+streamlit
+pandas
+openpyxl
