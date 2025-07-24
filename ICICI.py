@@ -22,10 +22,11 @@ if uploaded_file:
 
             for acc_id, group in df.groupby('AccountId/ Partner Loan ID'):
                 group = group.sort_values('EMI date').reset_index(drop=True)
-                # Drop last EMI row
+
+                # Drop last EMI record
                 group = group.iloc[:-1].copy()
 
-                # Insert new row at the top
+                # Insert new EMI at top
                 new_row = group.iloc[0].copy()
                 new_row['EMI date'] = pd.to_datetime("2025-06-30")
                 group = pd.concat([pd.DataFrame([new_row]), group], ignore_index=True)
@@ -34,9 +35,12 @@ if uploaded_file:
 
             updated_df = pd.concat(updated_records, ignore_index=True)
 
-            # Aggregate EMI and Principal
-            result_summary = updated_df.groupby('AccountId/ Partner Loan ID')[['EMI', 'Principal']].sum().reset_index()
-            result_summary.columns = ['AccountId/ Partner Loan ID', 'Total EMI Amount', 'Total Principal']
+            # Create summary table
+            summary_df = updated_df.groupby('AccountId/ Partner Loan ID').agg(
+                Total_EMI_Amount=('EMI', 'sum'),
+                Total_Principal=('Principal', 'sum'),
+                Total_EMI_Count=('EMI', 'count')
+            ).reset_index()
 
             st.success("✅ EMI dates adjusted and totals calculated!")
 
@@ -44,13 +48,13 @@ if uploaded_file:
             st.dataframe(updated_df)
 
             st.subheader("📋 Summary")
-            st.dataframe(result_summary)
+            st.dataframe(summary_df)
 
             # Prepare Excel file with 2 sheets
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 updated_df.to_excel(writer, sheet_name='Adjusted EMI Schedule', index=False)
-                result_summary.to_excel(writer, sheet_name='Summary', index=False)
+                summary_df.to_excel(writer, sheet_name='Summary', index=False)
             output.seek(0)
 
             st.download_button(
