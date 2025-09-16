@@ -13,7 +13,7 @@ def rename_file(file_name, partnercustomerid, partnerloanid):
     elif "voter" in name_lower and "coap" in name_lower:
         new_name = f"{partnercustomerid}_{partnerloanid}_Coapplicant1_POI_Voterid.jpg"
     elif "bank" in name_lower and "stmt" in name_lower:
-        new_name = f"{partnercustomerid}_{partnerloanid}_BankStatement.pdf"
+        new_name = f"{partnercustomerid}_{partnerloanid}_BankStatement.jpg"
     elif "pan" in name_lower and "coap" in name_lower:
         new_name = f"{partnercustomerid}_{partnerloanid}_Coapplicant1_Pan.jpg"
     elif "pan" in name_lower:
@@ -21,7 +21,7 @@ def rename_file(file_name, partnercustomerid, partnerloanid):
     elif "voter" in name_lower and "back" in name_lower:
         new_name = f"{partnercustomerid}_{partnerloanid}_POI_Voterid_back.jpg"
     else:
-        # If no keyword match, keep original name with prefix
+        # If no match, keep original name with prefix
         base, ext = os.path.splitext(file_name)
         new_name = f"{partnercustomerid}_{partnerloanid}_{base}{ext}"
 
@@ -41,7 +41,6 @@ if st.button("Rename and Download"):
     elif not uploaded_files:
         st.error("Please upload at least one file.")
     else:
-        # Create in-memory zip file
         zip_buffer = BytesIO()
         with ZipFile(zip_buffer, "w") as zip_file:
             for uploaded_file in uploaded_files:
